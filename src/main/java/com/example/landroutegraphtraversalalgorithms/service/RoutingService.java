@@ -1,5 +1,6 @@
 package com.example.landroutegraphtraversalalgorithms.service;
 
+import com.example.landroutegraphtraversalalgorithms.helpers.GraphTraversalAlgorithms;
 import com.example.landroutegraphtraversalalgorithms.model.Country;
 import com.example.landroutegraphtraversalalgorithms.model.Graph;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -19,7 +20,7 @@ import java.util.Map;
 @Data
 public class RoutingService {
 
-    Graph countriesGraph;
+    private final Graph countriesGraph;
 
     public RoutingService() throws IOException {
         this.countriesGraph = new Graph();
@@ -29,7 +30,7 @@ public class RoutingService {
         //read JSON file and convert to a customer object
         List<Country> countriesList = objectMapper.readValue
                 (
-                    new File("src/main/resources/countries.json"),
+                    getClass().getResourceAsStream("/countries.json"),
                     new TypeReference<ArrayList<Country>>() {}
                 );
 
@@ -37,19 +38,19 @@ public class RoutingService {
     }
 
     public Boolean isAdjVerticesNull() {
-        return countriesGraph.getAdjVertices().isEmpty();
+        return this.countriesGraph.getAdjVertices().isEmpty();
     }
 
     public Graph getGraph() {
-        return countriesGraph;
+        return this.countriesGraph;
     }
 
     public void initializeGraph(List<Country> countriesList) {
         for(Country country : countriesList) {
             String countryCode = country.getCca3();
-            countriesGraph.addVertex(countryCode);
+            this.countriesGraph.addVertex(countryCode);
             for(String borderCountryCode: country.getBorders()) {
-                countriesGraph.addEdge(countryCode, borderCountryCode);
+                this.countriesGraph.addEdge(countryCode, borderCountryCode);
             }
         }
     }
@@ -64,5 +65,16 @@ public class RoutingService {
         }
 
         return countriesGraph.getAdjVertices().containsKey(countryCode);
+    }
+
+    public LinkedList<String> getShortestRoute(String origin, String destination) {
+
+        LinkedList<String> shortestPath = GraphTraversalAlgorithms.findShortestPath(countriesGraph.getAdjVertices(), origin, destination);
+        if(shortestPath == null) {
+            return null;
+        }
+        LinkedList<String> resultingPath = new LinkedList<>();
+        shortestPath.stream().forEach(c -> resultingPath.add(c));
+        return resultingPath;
     }
 }

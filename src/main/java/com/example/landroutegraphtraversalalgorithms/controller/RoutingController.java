@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,25 +19,22 @@ public class RoutingController {
 
     private final RoutingService routingService;
 
-    @GetMapping(path = "/{countryCode}")
-    public ResponseEntity<Map<String, List<String>>> getShortestRoute
-            (
-                    @PathVariable String countryCode
-            ) {
-//        if(routingService.testGraphHasCountry(countryCode))
-//            return new ResponseEntity<>(HttpStatus.OK);
-
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
     @GetMapping(path = "/{origin}/{destination}")
-    public ResponseEntity<Map<String, List<String>>> getShortestRoute
+    public ResponseEntity<Map<String, LinkedList<String>>> getShortestRoute
             (
                     @PathVariable String origin,
                     @PathVariable String destination
             ) {
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        LinkedList<String> shortestRoute = routingService.getShortestRoute(origin, destination);
+        if(shortestRoute == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Map<String, LinkedList<String>> result = new HashMap<>();
+        result.put("route", shortestRoute);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 }
